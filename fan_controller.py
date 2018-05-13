@@ -1,7 +1,6 @@
 import subprocess
 import os
 import sys
-import gspread
 from datetime import datetime
 import time
 
@@ -25,10 +24,15 @@ def main():
 
             if gputemp <= 40:
                 newfanspeed = 0 + delta
+                newfanspeed = max(newfanspeed, 0)
+
             if gputemp > 40 and gputemp < 75:
                 newfanspeed = gputemp + delta
+                newfanspeed = min(newfanspeed, 100)
+
             if gputemp >= 75:
                 newfanspeed = 100
+
 
             process = subprocess.Popen("nvidia-settings -a \"[fan-{}]/GPUTargetFanSpeed={}\"".format(i, newfanspeed), stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=True)
             output, error = process.communicate()
@@ -39,5 +43,5 @@ def main():
 
             time.sleep(1)
 
-        time.sleep(4)
+        time.sleep(10)
 main()
