@@ -25,7 +25,7 @@ def main():
         LOGGER.info("[STATUS]: GPU #{} Temperature = {}".format(i, gputemp))
 
         if gputemp <= 40:
-            newfanspeed = 0 + delta
+            newfanspeed = 0
             newfanspeed = max(newfanspeed, 0)
 
         if gputemp > 40 and gputemp < 75:
