@@ -11,8 +11,8 @@ def main():
 
     delta = int(sys.argv[1])
 
-    process = subprocess.Popen("DISPLAY=:0 XAUTHORITY=/var/run/lightdm/root/:0 nvidia-settings -a 'GPUFanControlState=1'", stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=True)
-    process.communicate()
+    # process = subprocess.Popen("DISPLAY=:0 XAUTHORITY=/var/run/lightdm/root/:0 nvidia-settings -a 'GPUFanControlState=1'", stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=True)
+    # process.communicate()
 
 
 
@@ -25,8 +25,7 @@ def main():
         LOGGER.info("[STATUS]: GPU #{} Temperature = {}".format(i, gputemp))
 
         if gputemp <= 40:
-            newfanspeed = 0
-            newfanspeed = max(newfanspeed, 0)
+            newfanspeed = 35
 
         if gputemp > 40 and gputemp < 75:
             newfanspeed = gputemp + delta
