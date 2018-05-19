@@ -43,6 +43,4 @@ def main():
         if error:
             LOGGER.critical("[ERROR]: {}".format(error.decode().strip()))
 
-        time.sleep(1)
-
 main()
