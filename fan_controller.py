@@ -42,13 +42,13 @@ def main():
             new_fan_speed = 100
 
         if abs(recent_fan_speed - new_fan_speed) <= 3:
-            LOGGER.info("[NO_ACT]: Target Fan Speed = {}, Recent Fan Speed = {}".format(new_fan_speed, recent_fan_speed))
+            LOGGER.info("[NO_ACT]: GPU #{} Target Fan Speed = {}, Recent Fan Speed = {}".format(new_fan_speed, recent_fan_speed))
         else:
             process = subprocess.Popen("DISPLAY=:0 XAUTHORITY=/var/run/lightdm/root/:0 nvidia-settings -a \"[fan-{}]/GPUTargetFanSpeed={}\"".format(i, new_fan_speed), stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=True)
             output, error = process.communicate()
             if output:
-                LOGGER.info("[ACTION]: {}".format(output.decode().strip()))
+                LOGGER.info("[ACTION]: GPU #{} {}".format(i, output.decode().strip()))
             if error:
-                LOGGER.critical("[ERROR]: {}".format(error.decode().strip()))
+                LOGGER.critical("[ERROR]: GPU #{} {}".format(i, error.decode().strip()))
 
 main()
