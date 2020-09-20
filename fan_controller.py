@@ -4,14 +4,21 @@ import sys
 from datetime import datetime
 import time
 from logger import make_logger
+import platform
 
 LOGGER = make_logger(sys.stderr, "fan_control")
 
+
 def main():
+
+    if '18.04' in platform.version():
+        NV_prefix = "sudo -s DISPLAY=:0 XAUTHORITY=/run/user/1000/gdm/Xauthority"
+    if '20.04' in platform.version():
+        NV_prefix = "sudo -s DISPLAY=:0 XAUTHORITY=/run/user/125/gdm/Xauthority"
 
     delta = int(sys.argv[1])
 
-    process = subprocess.Popen("DISPLAY=:0 XAUTHORITY=/var/run/lightdm/root/:0 nvidia-settings -a 'GPUFanControlState=1'", stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=True)
+    process = subprocess.Popen(f"{NV_prefix} nvidia-settings -a 'GPUFanControlState=1'", stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=True)
     process.communicate()
 
     # while True:
@@ -27,7 +34,8 @@ def main():
     for i, line in enumerate(temperature_list,0):
         gpu_temp = int(line.decode())
         recent_fan_speed = int(fan_speed_list[i].decode().strip().strip("%"))
-        LOGGER.info("[STATUS]: GPU #{} Temperature = {}. Recent Fan Speed = {}".format(i, gpu_temp, recent_fan_speed))
+        LOGGER.info(f"[STATUS]: GPU #{i} Temperature = {gpu_temp}. Recent Fan Speed = {recent_fan_speed}")
+        print(f"[STATUS]: GPU #{i} Temperature = {gpu_temp}. Recent Fan Speed = {recent_fan_speed}")
 
         if gpu_temp <= 40:
             new_fan_speed = 35
@@ -40,13 +48,17 @@ def main():
             new_fan_speed = 100
 
         if abs(recent_fan_speed - new_fan_speed) <= 3:
-            LOGGER.info("[NO_ACT]: GPU #{} Target Fan Speed = {}, Recent Fan Speed = {}".format(i, new_fan_speed, recent_fan_speed))
+            LOGGER.info(f"[NO_ACT]: GPU #{i} Target Fan Speed = {new_fan_speed}, Recent Fan Speed = {recent_fan_speed}")
+            print(f"[NO_ACT]: GPU #{i} Target Fan Speed = {new_fan_speed}, Recent Fan Speed = {recent_fan_speed}")
+
         else:
-            process = subprocess.Popen("DISPLAY=:0 XAUTHORITY=/var/run/lightdm/root/:0 nvidia-settings -a \"[fan-{}]/GPUTargetFanSpeed={}\"".format(i, new_fan_speed), stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=True)
+            process = subprocess.Popen(f"{NV_prefix} nvidia-settings -a \"[fan-{i}]/GPUTargetFanSpeed={new_fan_speed}\"", stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell=True)
             output, error = process.communicate()
             if output:
-                LOGGER.info("[ACTION]: GPU #{} {}".format(i, output.decode().strip()))
+                LOGGER.info(f"[ACTION]: GPU #{i} {output.decode().strip()}")
+                print(f"[ACTION]: GPU #{i} {output.decode().strip()}")
             if error:
-                LOGGER.critical("[ERROR]: GPU #{} {}".format(i, error.decode().strip()))
+                LOGGER.critical(f"[ERROR]: GPU #{i} {error.decode().strip()}")
+                print(f"[ERROR]: GPU #{i} {error.decode().strip()}")
 
 main()
